@@ -1,0 +1,22 @@
+name: Commit Message Check
+
+on: push
+
+jobs:
+  commit-message-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        
+      - name: Check commit messages
+        run: |
+          PATTERN="#\d+ - .+"
+          for COMMIT in $(git rev-list ${{ github.event.before }}..${{ github.sha }}); do
+            COMMIT_MESSAGE=$(git log -1 --pretty=%B $COMMIT)
+            if ! [[ "$COMMIT_MESSAGE" =~ $PATTERN ]]; then
+              echo "ERROR: Commit message '${COMMIT_MESSAGE}' does not match the pattern '${PATTERN}'."
+              exit 1
+            fi
+          done
+
